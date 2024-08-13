@@ -21,23 +21,37 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @EnableWebSecurity
 public class AppConfig {
 
+//	@Bean
+//	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+//		System.out.println("inside appconfig");
+//		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//		.authorizeHttpRequests(authorize -> authorize
+//				.antMatchers("/api/admin/**").hasAnyRole("RESTAURANT_OWNER","ADMIN")
+//				.antMatchers("/api/**").authenticated()
+//				.anyRequest().permitAll()
+//				).addFilterBefore(new JwtTokenValidator(),BasicAuthenticationFilter.class )
+//		         .csrf(csrf -> csrf.disable())
+//		         .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+//		
+//		
+//		return http.build();
+//	}
+	
 	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
-		
-		http
-		.sessionManagement(management -> management
-				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-				)
-		   .authorizeHttpRequests(Authorize -> Authorize
-				.antMatchers("/api/admin/**").hasAnyRole("RESTAURANT_OWNER","ADMIN")
-				.antMatchers("/api/**").authenticated()
-				.anyRequest().permitAll()
-		).addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)
-		 .csrf(csrf -> csrf.disable())
-		 .cors(cors -> cors.configurationSource(corsConfigurationSource()));
-		
-		return http.build();
+	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	    System.out.println("inside appconfig");
+	    http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+	        .authorizeHttpRequests(authorize -> authorize
+	        		.antMatchers("/api/admin/**").hasAnyRole("RESTAURANT_OWNER","ADMIN")
+					.antMatchers("/api/**").authenticated()
+					.anyRequest().permitAll()
+	        ).addFilterBefore(new JwtTokenValidator(),BasicAuthenticationFilter.class )
+	        .csrf(csrf -> csrf.disable())
+	        .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+	    
+	    return http.build();
 	}
+
 	
 	private CorsConfigurationSource corsConfigurationSource() {
 		
@@ -45,7 +59,8 @@ public class AppConfig {
 
 			@Override
 			public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-
+				
+				System.out.println("inside corsconfig");
 				CorsConfiguration cfg= new CorsConfiguration();
 				cfg.setAllowedOrigins(Arrays.asList(
 						//frontend URLs to be add here

@@ -23,44 +23,37 @@ import io.jsonwebtoken.security.Keys;
 
 public class JwtTokenValidator extends OncePerRequestFilter {
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request, 
-			HttpServletResponse response,
-			FilterChain filterChain)
-			throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		String jwt = request.getHeader(JwtConstant.JWT_HEADER);
-		
-		if(jwt!=null) {
-			jwt = jwt.substring(7);
-			try {
-				
-				SecretKey key= Keys.hmacShaKeyFor(JwtConstant.SECRETE_KEY.getBytes());
-				Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt).getBody();
-				
-				String email = String.valueOf(claims.get("email"));
-				String authorities = String.valueOf((claims.get("authorities")));
-				
-				//here we will get ROLE_CUSTOMER, ROLE_ADMIN
-				List<GrantedAuthority> auth = AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
-				
-				Authentication authentication = new UsernamePasswordAuthenticationToken(email,null,auth);
-				
-				SecurityContextHolder.getContext().setAuthentication(authentication);
-				
-			}catch(Exception e) {
-				throw new BadCredentialsException("invalid token.....");
-			}
-		}
-	}
-
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, 
+            HttpServletResponse response,
+            FilterChain filterChain)
+            throws ServletException, IOException {
+        System.out.println("inside jwttokenvalidator");
+        
+        // Get JWT from Authorization header
+        String jwt = request.getHeader(JwtConstant.JWT_HEADER);
+        
+        if (jwt != null && jwt.startsWith("Bearer ")) {
+            jwt = jwt.substring(7); // Remove "Bearer " prefix
+            
+            try {
+                SecretKey key = Keys.hmacShaKeyFor(JwtConstant.SECRETE_KEY.getBytes());
+                Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt).getBody();
+                
+                String email = claims.getSubject(); // Change from "email" to subject if that's how it's set
+                String authorities = claims.get("authorities", String.class);
+                
+                List<GrantedAuthority> auth = AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
+                
+                Authentication authentication = new UsernamePasswordAuthenticationToken(email, null, auth);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                
+            } catch (Exception e) {
+                throw new BadCredentialsException("Invalid token");
+            }
+        }
+        
+        // Proceed with the next filter
+        filterChain.doFilter(request, response);
+    }
 }
-
-
-
-
-
-
-
-
-
